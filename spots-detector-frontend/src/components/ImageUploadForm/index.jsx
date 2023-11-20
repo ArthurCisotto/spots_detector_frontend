@@ -62,6 +62,18 @@ const ImageUploadForm = () => {
                     {loading ? <CircularProgress size={24} /> : 'Upload'}
                 </Button>
             </Box>
+            <Typography variant="body1" gutterBottom sx={{ mt: 4 }}>
+                <strong>Observações:</strong>
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+                - A precisão do modelo não é 100%. Portanto, é recomendado que você consulte um médico para um diagnóstico mais preciso.
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+                - Se o retângulo ao redor da pinta for <strong>verde</strong>, a pinta provavelmente é benigna. Se for <strong>vermelho</strong>, a pinta provavelmente é maligna e é recomendado que ela seja examinada por um médico.
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+                - Se uma pinta não tiver um retângulo ao redor, o modelo não conseguiu detectá-la.
+            </Typography>
 
             {imageBase64 && (
                 <Box sx={{ mt: 4 }}>
@@ -71,6 +83,7 @@ const ImageUploadForm = () => {
                     <img src={`data:image/jpeg;base64,${imageBase64}`} alt="Imagem Processada" style={{ maxWidth: '100%', height: 'auto' }} />
                 </Box>
             )}
+
         </Container>
     );
 }
