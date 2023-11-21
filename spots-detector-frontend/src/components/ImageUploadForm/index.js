@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button, Container, Typography, Box, CircularProgress } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, CameraAlt as CameraAltIcon } from '@mui/icons-material';
 import Webcam from "react-webcam";
+import ImageCropper from '../ImageCropper';
 
 const ImageUploadForm = () => {
     const [selectedImage, setSelectedImage] = useState(null);
@@ -10,10 +11,28 @@ const ImageUploadForm = () => {
     const [loading, setLoading] = useState(false);
     const [webcamEnabled, setWebcamEnabled] = useState(false);
     const webcamRef = useRef(null);
+    const [imageToCrop, setImageToCrop] = useState(null);
+    const [croppedImage, setCroppedImage] = useState(null);
+    const [showCropper, setShowCropper] = useState(false); 
+
+    const handleShowCropper = () => {
+        setShowCropper(true);
+    };
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setSelectedImage(e.target.files[0]);
+            setWebcamEnabled(false);
+        }
+        if (e.target.files && e.target.files.length > 0) {
+            const reader = new FileReader();
+
+            reader.addEventListener('load', () =>
+                setImageToCrop(reader.result),
+                setCroppedImage(null)
+            );
+
+            reader.readAsDataURL(e.target.files[0]);
         }
     };
 
@@ -23,30 +42,59 @@ const ImageUploadForm = () => {
             .then(res => res.blob())
             .then(blob => {
                 setSelectedImage(new File([blob], "webcam-image.jpg", { type: "image/jpeg" }));
+                setImageToCrop(imageSrc);
+                setCroppedImage(null);
             });
         setWebcamEnabled(false);
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const formData = new FormData();
-        formData.append('image', selectedImage);
-
-        try {
-            const response = await axios.post('http://localhost:8000/api/upload/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            setImageBase64(response.data.image_base64);
-        } catch (error) {
-            console.error("Error uploading image:", error);
-        } finally {
+    
+        const imageToSend = croppedImage ? croppedImage : imageToCrop;
+        if (!imageToSend) {
+            console.error("Nenhuma imagem disponível para upload.");
             setLoading(false);
+            return;
+        }
+    
+        const formData = new FormData();
+        if (croppedImage) {
+            // Se a imagem foi recortada, envie a imagem recortada
+            fetch(croppedImage)
+                .then(res => res.blob())
+                .then(blob => {
+                    const file = new File([blob], "cropped-image.jpg", { type: "image/jpeg" });
+                    formData.append('image', file);
+                    sendFormData(formData);
+                });
+        } else {
+            // Se não, envie a imagem original
+            formData.append('image', selectedImage);
+            sendFormData(formData);
         }
     };
-
+    
+    const sendFormData = (formData) => {
+        axios.post('http://localhost:8000/api/upload/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(response => {
+            setImageBase64(response.data.image_base64);
+        })
+        .catch(error => {
+            console.error("Erro no upload da imagem:", error);
+        })
+        .finally(() => {
+            setShowCropper(false);
+            setLoading(false);
+        });  
+    };
+    
+    // ... [resto do componente] ...
+    
     return (
         <Container maxWidth="sm">
             <Typography variant="h4" gutterBottom>
@@ -73,6 +121,26 @@ const ImageUploadForm = () => {
                 <Button variant="contained" onClick={() => setWebcamEnabled(true)} startIcon={<CameraAltIcon />} sx={{ mr: 2 }}>
                     Tirar Foto
                 </Button>
+                <Button
+                variant="contained"
+                onClick={handleShowCropper}
+                sx={{ mt: 2, mb: 2 }}
+                disabled={!imageToCrop}
+                >
+                    Cortar Imagem
+                </Button>
+
+                {showCropper && (
+                    <div>
+                        <ImageCropper
+                            imageToCrop={imageToCrop}
+                            onImageCropped={(croppedImage) => {
+                                setCroppedImage(croppedImage);
+                            }}
+                        />
+                    </div>
+                )}
+
                 <Button
                     type="submit"
                     fullWidth
