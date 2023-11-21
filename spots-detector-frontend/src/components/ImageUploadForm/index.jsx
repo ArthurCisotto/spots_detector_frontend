@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Button, Container, Typography, Box, CircularProgress } from '@mui/material';
-import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
+import { CloudUpload as CloudUploadIcon, CameraAlt as CameraAltIcon } from '@mui/icons-material';
+import Webcam from "react-webcam";
 
 const ImageUploadForm = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [imageBase64, setImageBase64] = useState('');
     const [loading, setLoading] = useState(false);
+    const [webcamEnabled, setWebcamEnabled] = useState(false);
+    const webcamRef = useRef(null);
 
     const handleImageChange = (e) => {
-        setSelectedImage(e.target.files[0]);
-    }
+        if (e.target.files && e.target.files[0]) {
+            setSelectedImage(e.target.files[0]);
+        }
+    };
+
+    const handleCapture = () => {
+        const imageSrc = webcamRef.current.getScreenshot();
+        fetch(imageSrc)
+            .then(res => res.blob())
+            .then(blob => {
+                setSelectedImage(new File([blob], "webcam-image.jpg", { type: "image/jpeg" }));
+            });
+        setWebcamEnabled(false);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,12 +45,12 @@ const ImageUploadForm = () => {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <Container maxWidth="sm">
             <Typography variant="h4" gutterBottom>
-                Upload de Imagem
+                Detecção de Pintas
             </Typography>
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                 <input
@@ -50,8 +65,14 @@ const ImageUploadForm = () => {
                     <Button variant="contained" component="span" startIcon={<CloudUploadIcon />} sx={{ mr: 2 }}>
                         Escolher Imagem
                     </Button>
-                    {selectedImage ? selectedImage.name : 'Nenhuma imagem selecionada'}
+                    {selectedImage ? (typeof selectedImage === 'string' ? 'Imagem da Webcam' : selectedImage.name) : 'Nenhuma imagem selecionada'}
                 </label>
+                <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
+                    ou
+                </Typography>
+                <Button variant="contained" onClick={() => setWebcamEnabled(true)} startIcon={<CameraAltIcon />} sx={{ mr: 2 }}>
+                    Tirar Foto
+                </Button>
                 <Button
                     type="submit"
                     fullWidth
@@ -61,6 +82,19 @@ const ImageUploadForm = () => {
                 >
                     {loading ? <CircularProgress size={24} /> : 'Upload'}
                 </Button>
+                {webcamEnabled && (
+                    <Box sx={{ mt: 2 }}>
+                        <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            style={{ width: '100%', height: 'auto' }}
+                        />
+                        <Button variant="contained" onClick={handleCapture} sx={{ mt: 2 }}>
+                            Capturar Imagem
+                        </Button>
+                    </Box>
+                )}
             </Box>
             <Typography variant="body1" gutterBottom sx={{ mt: 4 }}>
                 <strong>Observações:</strong>
@@ -74,7 +108,9 @@ const ImageUploadForm = () => {
             <Typography variant="body2" gutterBottom>
                 - Se uma pinta não tiver um retângulo ao redor, o modelo não conseguiu detectá-la.
             </Typography>
-
+            <Typography variant="body2" gutterBottom>
+                - Os <strong>números nos retângulos representam a probabilidade</strong> da pinta pertencer à classe que a cor do retângulo representa. Por exemplo, se o retângulo for verde e o número for 0.9, significa que o modelo tem 90% de certeza de que a pinta é benigna. Se o retângulo for vermelho e o número for 0.4, significa que o modelo tem 40% de certeza de que a pinta é maligna.
+            </Typography>
             {imageBase64 && (
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom>
@@ -83,7 +119,6 @@ const ImageUploadForm = () => {
                     <img src={`data:image/jpeg;base64,${imageBase64}`} alt="Imagem Processada" style={{ maxWidth: '100%', height: 'auto' }} />
                 </Box>
             )}
-
         </Container>
     );
 }
