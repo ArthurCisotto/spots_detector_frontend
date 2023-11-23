@@ -76,7 +76,7 @@ const ImageUploadForm = () => {
     };
     
     const sendFormData = (formData) => {
-        axios.post('https://web-production-b4d5.up.railway.app/api/upload/', formData, {
+        axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload/`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -93,94 +93,135 @@ const ImageUploadForm = () => {
         });  
     };
     
-    // ... [resto do componente] ...
-    
+    const styles = {
+        container: {
+            backgroundColor: '#f5f5f5',
+            padding: '20px',
+            borderRadius: '15px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+            margin: '20px auto',
+        },
+        button: {
+            backgroundColor: '#4caf50',
+            color: 'white',
+            '&:hover': {
+                backgroundColor: '#388e3c',
+            },
+            margin: '10px',
+        },
+        input: {
+            display: 'none',
+        },
+        header: {
+            color: '#3f51b5',
+            marginBottom: '20px',
+            fontWeight: 'bold',
+        },
+        text: {
+            color: '#3f51b5',
+            fontSize: 16,
+            marginBottom: '20px',
+            textAlign: 'justify',
+        },
+        webcamBox: {
+            marginTop: '20px',
+            padding: '10px',
+            border: '1px solid #ddd',
+            borderRadius: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+        },
+        imageBox: {
+            marginTop: '20px',
+            textAlign: 'center',
+        },
+    };
+
+
     return (
-        <Container maxWidth="sm">
-            <Typography variant="h4" gutterBottom>
+        <Container maxWidth="sm" style={styles.container}>
+            <Typography variant="h4" style={styles.header}>
                 Detecção de Pintas
             </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <Box component="form" onSubmit={handleSubmit} noValidate>
                 <input
                     accept="image/*"
-                    style={{ display: 'none' }}
+                    style={styles.input}
                     id="raised-button-file"
                     multiple
                     type="file"
                     onChange={handleImageChange}
                 />
                 <label htmlFor="raised-button-file">
-                    <Button variant="contained" component="span" startIcon={<CloudUploadIcon />} sx={{ mr: 2 }}>
+                    <Button variant="contained" component="span" startIcon={<CloudUploadIcon />} style={styles.button}>
                         Escolher Imagem
                     </Button>
-                    {selectedImage ? (typeof selectedImage === 'string' ? 'Imagem da Webcam' : selectedImage.name) : 'Nenhuma imagem selecionada'}
                 </label>
-                <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
-                    ou
-                </Typography>
-                <Button variant="contained" onClick={() => setWebcamEnabled(true)} startIcon={<CameraAltIcon />} sx={{ mr: 2 }}>
+                <Button variant="contained" onClick={() => setWebcamEnabled(true)} startIcon={<CameraAltIcon />} style={styles.button}>
                     Tirar Foto
                 </Button>
+                {selectedImage && (
+                    <Typography variant="body2" gutterBottom style={{ marginTop: '10px' }}>
+                        {typeof selectedImage === 'string' ? 'Imagem da Webcam' : selectedImage.name}
+                    </Typography>
+                )}
                 <Button
-                variant="contained"
-                onClick={handleShowCropper}
-                sx={{ mt: 2, mb: 2 }}
-                disabled={!imageToCrop}
+                    variant="contained"
+                    onClick={handleShowCropper}
+                    style={styles.button}
+                    disabled={!imageToCrop}
                 >
                     Cortar Imagem
                 </Button>
-
                 {showCropper && (
-                    <div>
-                        <ImageCropper
-                            imageToCrop={imageToCrop}
-                            onImageCropped={(croppedImage) => {
-                                setCroppedImage(croppedImage);
-                            }}
-                        />
-                    </div>
+                    <ImageCropper
+                        imageToCrop={imageToCrop}
+                        onImageCropped={(croppedImage) => {
+                            setCroppedImage(croppedImage);
+                        }}
+                    />
                 )}
-
+                <Typography variant="h6" gutterBottom style={styles.header}>
+                <strong>Observações:</strong>
+                </Typography>
+                <Typography variant="body2" gutterBottom style={styles.text}>
+                    - A precisão do modelo não é 100%. Portanto, é recomendado que você consulte um médico para um diagnóstico mais preciso.
+                </Typography>
+                <Typography variant="body2" gutterBottom style={styles.text}>
+                    - Se o retângulo ao redor da pinta for <strong>verde</strong>, a pinta provavelmente é benigna. Se for <strong>vermelho</strong>, a pinta provavelmente é maligna e é recomendado que ela seja examinada por um médico.
+                </Typography>
+                <Typography variant="body2" gutterBottom style={styles.text}>
+                    - Se uma pinta não tiver um retângulo ao redor, o modelo não conseguiu detectá-la.
+                </Typography>
+                <Typography variant="body2" gutterBottom style={styles.text}>
+                    - Os <strong>números nos retângulos representam a probabilidade</strong> da pinta pertencer à classe que a cor do retângulo representa. Por exemplo, se o retângulo for verde e o número for 0.9, significa que o modelo tem 90% de certeza de que a pinta é benigna. Se o retângulo for vermelho e o número for 0.4, significa que o modelo tem 40% de certeza de que a pinta é maligna.
+                </Typography>
                 <Button
                     type="submit"
                     fullWidth
                     variant="outlined"
-                    sx={{ mt: 3, mb: 2 }}
+                    style={{ ...styles.button, backgroundColor: 'transparent', color: '#4caf50', border: '1px solid #4caf50', marginTop: '20px' }}
                     disabled={!selectedImage || loading}
                 >
                     {loading ? <CircularProgress size={24} /> : 'Upload'}
                 </Button>
                 {webcamEnabled && (
-                    <Box sx={{ mt: 2 }}>
+                    <Box style={styles.webcamBox}>
                         <Webcam
                             audio={false}
                             ref={webcamRef}
                             screenshotFormat="image/jpeg"
                             style={{ width: '100%', height: 'auto' }}
                         />
-                        <Button variant="contained" onClick={handleCapture} sx={{ mt: 2 }}>
+                        <Button variant="contained" onClick={handleCapture} style={styles.button}>
                             Capturar Imagem
                         </Button>
                     </Box>
                 )}
             </Box>
-            <Typography variant="body1" gutterBottom sx={{ mt: 4 }}>
-                <strong>Observações:</strong>
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-                - A precisão do modelo não é 100%. Portanto, é recomendado que você consulte um médico para um diagnóstico mais preciso.
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-                - Se o retângulo ao redor da pinta for <strong>verde</strong>, a pinta provavelmente é benigna. Se for <strong>vermelho</strong>, a pinta provavelmente é maligna e é recomendado que ela seja examinada por um médico.
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-                - Se uma pinta não tiver um retângulo ao redor, o modelo não conseguiu detectá-la.
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-                - Os <strong>números nos retângulos representam a probabilidade</strong> da pinta pertencer à classe que a cor do retângulo representa. Por exemplo, se o retângulo for verde e o número for 0.9, significa que o modelo tem 90% de certeza de que a pinta é benigna. Se o retângulo for vermelho e o número for 0.4, significa que o modelo tem 40% de certeza de que a pinta é maligna.
-            </Typography>
             {imageBase64 && (
-                <Box sx={{ mt: 4 }}>
+                <Box style={styles.imageBox}>
                     <Typography variant="h6" gutterBottom>
                         Imagem Processada:
                     </Typography>
