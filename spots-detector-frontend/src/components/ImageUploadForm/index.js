@@ -76,7 +76,7 @@ const ImageUploadForm = () => {
     };
     
     const sendFormData = (formData) => {
-        axios.post('http://web-production-b4d5.up.railway.app/api/upload/', formData, {
+        axios.post('https://web-production-b4d5.up.railway.app/api/upload/', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
