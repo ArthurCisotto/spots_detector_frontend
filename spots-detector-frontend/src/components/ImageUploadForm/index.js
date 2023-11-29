@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Button, Container, Typography, Box, CircularProgress } from '@mui/material';
+import { Button, Container, Typography, Box, CircularProgress, AppBar, Toolbar } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, CameraAlt as CameraAltIcon } from '@mui/icons-material';
 import Webcam from "react-webcam";
 import ImageCropper from '../ImageCropper';
@@ -100,12 +100,17 @@ const ImageUploadForm = () => {
             borderRadius: '15px',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             margin: '20px auto',
+            maxWidth: '800px', // Set a maximum width for the container
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
         },
         button: {
-            backgroundColor: '#4caf50',
+            backgroundColor: '#CF995F',
             color: 'white',
             '&:hover': {
-                backgroundColor: '#388e3c',
+                backgroundColor: '#CF995F',
             },
             margin: '10px',
         },
@@ -113,12 +118,12 @@ const ImageUploadForm = () => {
             display: 'none',
         },
         header: {
-            color: '#3f51b5',
+            color: '#123456',
             marginBottom: '20px',
             fontWeight: 'bold',
         },
         text: {
-            color: '#3f51b5',
+            color: '#123456',
             fontSize: 16,
             marginBottom: '20px',
             textAlign: 'justify',
@@ -131,20 +136,71 @@ const ImageUploadForm = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            width: '100%',
         },
         imageBox: {
             marginTop: '20px',
             textAlign: 'center',
         },
+        appBar: {
+            backgroundColor: '#123456',
+            padding: '10px',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+        },
+        logo: {
+            flexGrow: 1,
+            cursor: 'pointer',
+        },
+        footer: {
+            backgroundColor: '#123456',
+            color: 'white',
+            padding: '10px',
+            position: 'fixed',
+            bottom: 0,
+            width: '100%',
+            textAlign: 'center',
+        },
+        link: {
+            color: 'white',
+            textDecoration: 'none',
+            '&:hover': {
+                textDecoration: 'underline',
+            },
+        },
     };
 
-
     return (
-        <Container maxWidth="sm" style={styles.container}>
-            <Typography variant="h4" style={styles.header}>
-                Detecção de Pintas
+        <>
+        <AppBar position="static" style={styles.appBar}>
+            <Toolbar>
+                <Typography variant="h4" style={styles.logo}>
+                    <strong>Spots Detector</strong>
+                </Typography>
+            </Toolbar>
+        </AppBar>
+        <Container maxWidth="false" style={styles.container}>
+            <Typography variant="h4" gutterBottom style={styles.header}>
+                <strong>Bem vindo ao Spots Detector!</strong>
             </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Typography variant="body2" gutterBottom style={styles.text}>
+                Este é um projeto de detecção de pintas malignas/benignas desenvolvido para a disciplina de Visão Computacional do curso de Engenharia de Computação do Insper.
+            </Typography>
+            <Typography variant="body2" gutterBottom style={styles.text}>
+                Para utilizar o modelo, basta escolher uma imagem ou tirar uma foto com a webcam e clicar em <strong>Upload</strong>. O modelo irá detectar as pintas na imagem e classificá-las como benignas ou malignas.
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} noValidate style={{ width: '100%'}}>
+                <Typography variant="h6" gutterBottom style={styles.header}>
+                <strong>Escolha uma imagem:</strong>    
+                </Typography>
+                {selectedImage && (
+                    <Typography variant="body2" gutterBottom style={{ marginTop: '10px' }}>
+                        {typeof selectedImage === 'string' ? 'Imagem da Webcam' : selectedImage.name}
+                    </Typography>
+                )}
+                <Container maxWidth="false" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <Container maxWidth="false" style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
                 <input
                     accept="image/*"
                     style={styles.input}
@@ -161,11 +217,7 @@ const ImageUploadForm = () => {
                 <Button variant="contained" onClick={() => setWebcamEnabled(true)} startIcon={<CameraAltIcon />} style={styles.button}>
                     Tirar Foto
                 </Button>
-                {selectedImage && (
-                    <Typography variant="body2" gutterBottom style={{ marginTop: '10px' }}>
-                        {typeof selectedImage === 'string' ? 'Imagem da Webcam' : selectedImage.name}
-                    </Typography>
-                )}
+                </Container>
                 <Button
                     variant="contained"
                     onClick={handleShowCropper}
@@ -174,6 +226,7 @@ const ImageUploadForm = () => {
                 >
                     Cortar Imagem
                 </Button>
+                </Container>
                 {showCropper && (
                     <ImageCropper
                         imageToCrop={imageToCrop}
@@ -197,15 +250,17 @@ const ImageUploadForm = () => {
                 <Typography variant="body2" gutterBottom style={styles.text}>
                     - Os <strong>números nos retângulos representam a probabilidade</strong> da pinta pertencer à classe que a cor do retângulo representa. Por exemplo, se o retângulo for verde e o número for 0.9, significa que o modelo tem 90% de certeza de que a pinta é benigna. Se o retângulo for vermelho e o número for 0.4, significa que o modelo tem 40% de certeza de que a pinta é maligna.
                 </Typography>
+                <Container maxWidth="false" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Button
                     type="submit"
                     fullWidth
                     variant="outlined"
-                    style={{ ...styles.button, backgroundColor: 'transparent', color: '#4caf50', border: '1px solid #4caf50', marginTop: '20px' }}
+                    style={{ ...styles.button, backgroundColor: 'transparent', color: '#CF995F', border: '1px solid #CF995F' , marginTop: '20px' , width: '20%'}}
                     disabled={!selectedImage || loading}
                 >
                     {loading ? <CircularProgress size={24} /> : 'Upload'}
                 </Button>
+                </Container>
                 {webcamEnabled && (
                     <Box style={styles.webcamBox}>
                         <Webcam
@@ -229,6 +284,12 @@ const ImageUploadForm = () => {
                 </Box>
             )}
         </Container>
+        <footer style={styles.footer}>
+                <Typography variant="body2">
+                    2023 Spots Detector. Projeto desenvolvido por <a href="https://github.com/ArthurCisotto" style={styles.link}>Arthur Cisotto</a>, <a href="https://github.com/Pedro-Dannecker" style={styles.link}>Pedro Dannecker</a> e <a href="https://github.com/thiagosk" style={styles.link}>Thiago Shiguero</a>.
+                </Typography>
+        </footer>
+        </>
     );
 }
 
