@@ -248,7 +248,7 @@ const ImageUploadForm = () => {
                     - Se uma pinta não tiver um retângulo ao redor, o modelo não conseguiu detectá-la.
                 </Typography>
                 <Typography variant="body2" gutterBottom style={styles.text}>
-                    - Os <strong>números nos retângulos representam a probabilidade</strong> da pinta pertencer à classe que a cor do retângulo representa. Por exemplo, se o retângulo for verde e o número for 0.9, significa que o modelo tem 90% de certeza de que a pinta é benigna. Se o retângulo for vermelho e o número for 0.4, significa que o modelo tem 40% de certeza de que a pinta é maligna.
+                    - Os <strong>números nos retângulos representam a probabilidade</strong> da pinta pertencer à classe que a cor do retângulo representa. Por exemplo, se o retângulo for verde e o número for 90.00%, significa que o modelo tem 90% de certeza de que a pinta é benigna. Se o retângulo for vermelho e o número for 40.00%, significa que o modelo tem 40% de certeza de que a pinta é maligna.
                 </Typography>
                 <Container maxWidth="false" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Button
